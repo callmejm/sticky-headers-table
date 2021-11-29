@@ -223,6 +223,7 @@ class _StickyHeadersTableState extends State<StickyHeadersTable> {
                       child: SingleChildScrollView(
                         controller:
                             widget.scrollControllers._verticalBodyController,
+                        physics: NeverScrollableScrollPhysics(),
                         child: Column(
                           children: List.generate(
                             widget.rowsLength,
