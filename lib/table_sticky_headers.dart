@@ -55,6 +55,8 @@ class StickyHeadersTable extends StatefulWidget {
     /// Called when scrolling has ended, passing the current offset position
     this.onEndScrolling,
 
+    this.hideRow = false,
+
     /// Scroll controllers for the table
     ScrollControllers? scrollControllers,
   })  : this.scrollControllers = scrollControllers ?? ScrollControllers(),
@@ -83,6 +85,7 @@ class StickyHeadersTable extends StatefulWidget {
   final double initialScrollOffsetY;
   final Function(double x, double y)? onEndScrolling;
   final ScrollControllers scrollControllers;
+  final bool hideRow;
 
   @override
   _StickyHeadersTableState createState() => _StickyHeadersTableState();
@@ -178,40 +181,42 @@ class _StickyHeadersTableState extends State<StickyHeadersTable> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // STICKY COLUMN
-              NotificationListener<ScrollNotification>(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: List.generate(
-                      widget.rowsLength,
-                      (i) => GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => widget.onRowTitlePressed(i),
-                        child: Container(
-                          width: widget.cellDimensions.stickyLegendWidth,
-                          height: widget.cellDimensions.stickyHeight(i),
-                          alignment: widget.cellAlignments.columnAlignment(i),
-                          child: widget.rowsTitleBuilder(i),
+              if(!widget.hideRow)...[
+                // STICKY COLUMN
+                NotificationListener<ScrollNotification>(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: List.generate(
+                        widget.rowsLength,
+                        (i) => GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => widget.onRowTitlePressed(i),
+                          child: Container(
+                            width: widget.cellDimensions.stickyLegendWidth,
+                            height: widget.cellDimensions.stickyHeight(i),
+                            alignment: widget.cellAlignments.columnAlignment(i),
+                            child: widget.rowsTitleBuilder(i),
+                          ),
                         ),
                       ),
                     ),
+                    controller: widget.scrollControllers._verticalTitleController,
                   ),
-                  controller: widget.scrollControllers._verticalTitleController,
+                  onNotification: (ScrollNotification notification) {
+                    final didEndScrolling =
+                        _verticalSyncController.processNotification(
+                      notification,
+                      widget.scrollControllers._verticalTitleController,
+                    );
+                    if (widget.onEndScrolling != null && didEndScrolling) {
+                      _scrollOffsetY = widget
+                          .scrollControllers._verticalTitleController.offset;
+                      widget.onEndScrolling!(_scrollOffsetX, _scrollOffsetY);
+                    }
+                    return true;
+                  },
                 ),
-                onNotification: (ScrollNotification notification) {
-                  final didEndScrolling =
-                      _verticalSyncController.processNotification(
-                    notification,
-                    widget.scrollControllers._verticalTitleController,
-                  );
-                  if (widget.onEndScrolling != null && didEndScrolling) {
-                    _scrollOffsetY = widget
-                        .scrollControllers._verticalTitleController.offset;
-                    widget.onEndScrolling!(_scrollOffsetX, _scrollOffsetY);
-                  }
-                  return true;
-                },
-              ),
+              ],
               // CONTENT
               Expanded(
                 child: NotificationListener<ScrollNotification>(
