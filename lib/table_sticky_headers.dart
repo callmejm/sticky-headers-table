@@ -125,17 +125,19 @@ class _StickyHeadersTableState extends State<StickyHeadersTable> {
       children: <Widget>[
         Row(
           children: <Widget>[
-            // STICKY LEGEND
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: widget.onStickyLegendPressed,
-              child: Container(
-                width: widget.cellDimensions.stickyLegendWidth,
-                height: widget.cellDimensions.stickyLegendHeight,
-                alignment: widget.cellAlignments.stickyLegendAlignment,
-                child: widget.legendCell,
+            if(!widget.hideRow)...[
+              // STICKY LEGEND
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onStickyLegendPressed,
+                child: Container(
+                  width: widget.cellDimensions.stickyLegendWidth,
+                  height: widget.cellDimensions.stickyLegendHeight,
+                  alignment: widget.cellAlignments.stickyLegendAlignment,
+                  child: widget.legendCell,
+                ),
               ),
-            ),
+            ],
             // STICKY ROW
             Expanded(
               child: NotificationListener<ScrollNotification>(
