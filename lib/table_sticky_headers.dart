@@ -55,7 +55,7 @@ class StickyHeadersTable extends StatefulWidget {
     /// Called when scrolling has ended, passing the current offset position
     this.onEndScrolling,
 
-    this.hideRow = false,
+    this.showFirstRow = true,
 
     /// Scroll controllers for the table
     ScrollControllers? scrollControllers,
@@ -85,7 +85,7 @@ class StickyHeadersTable extends StatefulWidget {
   final double initialScrollOffsetY;
   final Function(double x, double y)? onEndScrolling;
   final ScrollControllers scrollControllers;
-  final bool hideRow;
+  final bool showFirstRow;
 
   @override
   _StickyHeadersTableState createState() => _StickyHeadersTableState();
@@ -116,16 +116,20 @@ class _StickyHeadersTableState extends State<StickyHeadersTable> {
   @override
   Widget build(BuildContext context) {
     SchedulerBinding.instance?.addPostFrameCallback((_) {
-      widget.scrollControllers._horizontalTitleController
-          .jumpTo(widget.initialScrollOffsetX);
-      widget.scrollControllers._verticalTitleController
-          .jumpTo(widget.initialScrollOffsetY);
+      if(widget.scrollControllers._horizontalTitleController.hasClients){
+        widget.scrollControllers._horizontalTitleController
+            .jumpTo(widget.initialScrollOffsetX);
+      }
+      if(widget.scrollControllers._verticalTitleController.hasClients){
+        widget.scrollControllers._verticalTitleController
+            .jumpTo(widget.initialScrollOffsetY);
+      }
     });
     return Column(
       children: <Widget>[
         Row(
           children: <Widget>[
-            if(!widget.hideRow)...[
+            if(widget.showFirstRow)...[
               // STICKY LEGEND
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -183,7 +187,7 @@ class _StickyHeadersTableState extends State<StickyHeadersTable> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              if(!widget.hideRow)...[
+              if(widget.showFirstRow)...[
                 // STICKY COLUMN
                 NotificationListener<ScrollNotification>(
                   child: SingleChildScrollView(
